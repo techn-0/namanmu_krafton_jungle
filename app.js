@@ -42,6 +42,16 @@ function calculateAngle(a, b, c) {
 let count = 0;
 let squatState = 'up'; // 시작 상태는 '서있음'
 
+// 운동 세션 데이터 초기화
+const sessionId = `session_${new Date().getTime()}`;
+const userId = 'user_123'; // 예시 사용자 ID
+let currentSession = {
+    userId: userId,
+    sessionId: sessionId,
+    exerciseType: 'squat',
+    frames: []
+};
+
 // 결과 처리 함수
 function onResults(results) {
     const landmarks = results.poseLandmarks;
@@ -67,6 +77,18 @@ function onResults(results) {
         if (angle < 90) {
             squatState = 'down';
         }
+
+        // 운동 프레임 데이터 저장
+        const frameData = {
+            timestamp: new Date().getTime(),
+            landmarks: landmarks.map((landmark, index) => ({
+                landmark_id: index,
+                x: landmark.x,
+                y: landmark.y,
+                z: landmark.z
+            }))
+        };
+        currentSession.frames.push(frameData);
     }
 
     canvasCtx.save();
@@ -91,6 +113,26 @@ function onResults(results) {
         drawLandmarks(canvasCtx, results.rightHandLandmarks, { color: 'green', lineWidth: 2 });
     }
     canvasCtx.restore();
+}
+
+// 운동 세션 종료 후 데이터를 MongoDB에 저장 (API 호출)
+async function saveSessionToDB() {
+    try {
+        const response = await fetch('http://localhost:3000/api/exercise-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(currentSession),
+        });
+        if (response.ok) {
+            console.log('Exercise session saved successfully.');
+        } else {
+            console.error('Failed to save exercise session.');
+        }
+    } catch (error) {
+        console.error('Error saving session:', error);
+    }
 }
 
 // Holistic 설정 및 초기화
