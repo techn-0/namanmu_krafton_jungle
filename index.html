@@ -9,6 +9,13 @@
 <body>
     <video id="input_video" style="display:none;"></video>
     <canvas id="output_canvas" width="640" height="480"></canvas>
-    <script src="./dist/bundle.js"></script>
+    <div id="count_display" style="position: absolute; top: 20px; left: 20px; font-size: 30px; color: red;">Squat Count: 0</div>
+    <div id="instruction_display" style="position: absolute; top: 60px; left: 20px; font-size: 20px; color: blue;">
+    Squat when knee angle is less than 90 degrees, stand when above 160 degrees.
+    </div>
+    <button id="start_button">Start</button>
+    <button id="stop_button">Stop</button>
+    <br><br><script src="./dist/bundle.js"></script>
+
 </body>
 </html>

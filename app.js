@@ -8,26 +8,6 @@ const videoElement = document.getElementById('input_video');
 const canvasElement = document.getElementById('output_canvas');
 const canvasCtx = canvasElement.getContext('2d');
 
-// 스쿼트 카운트를 화면에 표시할 요소 생성
-const countElement = document.createElement('div');
-countElement.style.position = 'absolute';
-countElement.style.top = '20px';
-countElement.style.left = '20px';
-countElement.style.fontSize = '30px';
-countElement.style.color = 'red';
-countElement.innerText = 'Squat Count: 0';
-document.body.appendChild(countElement);
-
-// 스쿼트 기준을 화면에 표시할 요소 생성
-const instructionElement = document.createElement('div');
-instructionElement.style.position = 'absolute';
-instructionElement.style.top = '60px';
-instructionElement.style.left = '20px';
-instructionElement.style.fontSize = '20px';
-instructionElement.style.color = 'blue';
-instructionElement.innerText = 'Squat when knee angle is less than 90 degrees, stand when above 160 degrees.';
-document.body.appendChild(instructionElement);
-
 // 각도 계산 함수
 function calculateAngle(a, b, c) {
     const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
@@ -41,6 +21,7 @@ function calculateAngle(a, b, c) {
 
 let count = 0;
 let squatState = 'up'; // 시작 상태는 '서있음'
+let isRecording = false; // 기록 중인지 여부
 
 // 운동 세션 데이터 초기화
 const sessionId = `session_${new Date().getTime()}`;
@@ -52,11 +33,38 @@ let currentSession = {
     frames: []
 };
 
+let lastSavedTimestamp = 0; // 마지막으로 저장한 시간
+
 // 결과 처리 함수
 function onResults(results) {
+    if (!isRecording) return; // 기록 중이 아닐 때는 아무 작업도 하지 않음
+
     const landmarks = results.poseLandmarks;
 
     if (landmarks) {
+        const currentTimestamp = new Date().getTime();
+
+        // 마지막 저장 시간과 비교하여 500ms가 지났을 때만 저장
+        if (currentTimestamp - lastSavedTimestamp > 1000) {
+            const frameData = {
+                timestamp: currentTimestamp,
+                landmarks: landmarks.map((landmark, index) => ({
+                    landmark_id: index,
+                    x: landmark.x,
+                    y: landmark.y,
+                    z: landmark.z
+                }))
+            };
+            currentSession.frames.push(frameData);
+            lastSavedTimestamp = currentTimestamp; // 마지막 저장 시간 갱신
+
+            // 만약 currentSession.frames의 길이가 일정 수준 이상이면 서버로 전송
+            if (currentSession.frames.length >= 100) { // 예: 100 프레임씩 나누어 저장
+                saveSessionToDB(currentSession);
+                currentSession.frames = []; // 전송 후 프레임 초기화
+            }
+        }
+
         // 엉덩이, 무릎, 발목 랜드마크 가져오기
         const hip = landmarks[23]; // 왼쪽 엉덩이
         const knee = landmarks[25]; // 왼쪽 무릎
@@ -70,25 +78,13 @@ function onResults(results) {
             if (squatState === 'down') {
                 squatState = 'up';
                 count++;
-                countElement.innerText = `Squat Count: ${count}`;
+                document.getElementById('count_display').innerText = `Squat Count: ${count}`;
                 console.log(`Count: ${count}`);
             }
         }
         if (angle < 90) {
             squatState = 'down';
         }
-
-        // 운동 프레임 데이터 저장
-        const frameData = {
-            timestamp: new Date().getTime(),
-            landmarks: landmarks.map((landmark, index) => ({
-                landmark_id: index,
-                x: landmark.x,
-                y: landmark.y,
-                z: landmark.z
-            }))
-        };
-        currentSession.frames.push(frameData);
     }
 
     canvasCtx.save();
@@ -116,14 +112,14 @@ function onResults(results) {
 }
 
 // 운동 세션 종료 후 데이터를 MongoDB에 저장 (API 호출)
-async function saveSessionToDB() {
+async function saveSessionToDB(sessionData) {
     try {
         const response = await fetch('http://localhost:3000/api/exercise-session', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(currentSession),
+            body: JSON.stringify(sessionData),
         });
         if (response.ok) {
             console.log('Exercise session saved successfully.');
@@ -169,10 +165,30 @@ pose.onResults(onResults);
 // 카메라 설정 및 시작
 const camera = new Camera(videoElement, {
     onFrame: async () => {
-        await holistic.send({ image: videoElement });
-        await pose.send({ image: videoElement });
+        if (isRecording) { // 기록 중일 때만 데이터를 처리
+            await holistic.send({ image: videoElement });
+            await pose.send({ image: videoElement });
+        }
     },
     width: 1280,
     height: 900
 });
+
+// 시작 버튼과 정지 버튼으로 기록 제어
+const startButton = document.getElementById('start_button');
+const stopButton = document.getElementById('stop_button');
+
+startButton.addEventListener('click', () => {
+    isRecording = true;
+    lastSavedTimestamp = 0; // 기록 시작 시 마지막 저장 시간 초기화
+    console.log('Recording started');
+});
+
+stopButton.addEventListener('click', () => {
+    isRecording = false;
+    console.log('Recording stopped');
+    saveSessionToDB(currentSession); // 기록 종료 후 세션 저장
+    currentSession.frames = []; // 프레임 데이터 초기화
+});
+
 camera.start();
