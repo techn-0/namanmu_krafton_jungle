@@ -53,6 +53,29 @@ app.post('/api/exercise-session', async (req, res) => {
         res.status(500).send('Error saving session: ' + error.message);
     }
 });
+// 운동 세션 데이터 가져오기 API
+app.get('/api/exercise-sessions', async (req, res) => {
+    try {
+        const sessions = await ExerciseSession.find({}, 'sessionId date'); // sessionId와 날짜만 반환
+        res.status(200).json(sessions);
+    } catch (error) {
+        res.status(500).send('Error fetching sessions: ' + error.message);
+    }
+});
+
+app.get('/api/exercise-session/:sessionId', async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const session = await ExerciseSession.findOne({ sessionId });
+        if (session) {
+            res.status(200).json(session);
+        } else {
+            res.status(404).send('Session not found');
+        }
+    } catch (error) {
+        res.status(500).send('Error fetching session: ' + error.message);
+    }
+});
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

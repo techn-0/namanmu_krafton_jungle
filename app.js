@@ -44,7 +44,7 @@ function onResults(results) {
     if (landmarks) {
         const currentTimestamp = new Date().getTime();
 
-        // 마지막 저장 시간과 비교하여 500ms가 지났을 때만 저장
+        // 마지막 저장 시간과 비교하여 1000ms가 지났을 때만 저장
         if (currentTimestamp - lastSavedTimestamp > 1000) {
             const frameData = {
                 timestamp: currentTimestamp,
@@ -161,7 +161,82 @@ pose.setOptions({
 });
 
 pose.onResults(onResults);
+//////////////////////  아바타 랜더링   ///////////////////
+function renderAvatar(frames) {
+    if (frames.length === 0) {
+        console.error("No frames available for rendering.");
+        return;
+    }
 
+    const canvas = document.getElementById('avatar_canvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentFrameIndex = 0;
+
+    function drawFrame() {
+        if (currentFrameIndex >= frames.length) {
+            currentFrameIndex = 0; // 마지막 프레임까지 그리면 다시 처음으로 되돌아감
+        }
+
+        // 현재 프레임의 랜드마크 가져오기
+        const landmarks = frames[currentFrameIndex].landmarks;
+
+        if (!landmarks || landmarks.length === 0) {
+            console.error("No landmarks available in the current frame.");
+            return;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'red';
+        ctx.strokeStyle = 'blue';
+        ctx.lineWidth = 2;
+
+        // 랜드마크 위치를 그려주는 함수
+        function drawLandmark(landmark) {
+            ctx.beginPath();
+            ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // 선으로 랜드마크를 연결하는 함수
+        function drawConnector(landmarkA, landmarkB) {
+            ctx.beginPath();
+            ctx.moveTo(landmarkA.x * canvas.width, landmarkA.y * canvas.height);
+            ctx.lineTo(landmarkB.x * canvas.width, landmarkB.y * canvas.height);
+            ctx.stroke();
+        }
+
+        // 간단한 아바타의 주요 랜드마크 연결
+        const hip = landmarks[23]; // 엉덩이
+        const knee = landmarks[25]; // 무릎
+        const ankle = landmarks[27]; // 발목
+
+        const shoulder = landmarks[11]; // 어깨
+        const elbow = landmarks[13]; // 팔꿈치
+        const wrist = landmarks[15]; // 손목
+
+        // 랜드마크 그리기
+        drawLandmark(hip);
+        drawLandmark(knee);
+        drawLandmark(ankle);
+        drawLandmark(shoulder);
+        drawLandmark(elbow);
+        drawLandmark(wrist);
+
+        // 랜드마크 연결하기 (간단한 스틱맨 형태)
+        drawConnector(shoulder, elbow);
+        drawConnector(elbow, wrist);
+        drawConnector(hip, knee);
+        drawConnector(knee, ankle);
+        drawConnector(hip, shoulder); // 몸통
+
+        // 다음 프레임으로 이동
+        currentFrameIndex++;
+    }
+
+    // 일정 간격으로 프레임을 그리기 (예: 30fps, 즉 33ms마다 한 프레임)
+    setInterval(drawFrame, 100);
+}
 // 카메라 설정 및 시작
 const camera = new Camera(videoElement, {
     onFrame: async () => {
@@ -173,6 +248,56 @@ const camera = new Camera(videoElement, {
     width: 1280,
     height: 900
 });
+
+////////////////아바타 렌더링////
+async function loadSessions() {
+    try {
+        const response = await fetch('http://localhost:3000/api/exercise-sessions');
+        if (response.ok) {
+            const sessions = await response.json();
+            const selectElement = document.getElementById('session_select');
+            sessions.forEach(session => {
+                const option = document.createElement('option');
+                option.value = session.sessionId;
+                option.textContent = `${session.sessionId} - ${new Date(session.date).toLocaleString()}`;
+                selectElement.appendChild(option);
+            });
+        } else {
+            console.error('Failed to load sessions');
+        }
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+    }
+}
+
+async function fetchSessionData(sessionId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/exercise-session/${sessionId}`);
+        if (response.ok) {
+            const sessionData = await response.json();
+            console.log('Fetched session data:', sessionData);
+            renderAvatar(sessionData.frames);
+        } else {
+            console.error('Failed to fetch session data');
+            alert('Failed to fetch session data. Please check the Session ID.');
+        }
+    } catch (error) {
+        console.error('Error fetching session data:', error);
+        alert('Error fetching session data.');
+    }
+}
+
+// 선택된 세션 ID로 데이터 가져오기
+document.getElementById('fetch_selected_session_button').addEventListener('click', () => {
+    const sessionId = document.getElementById('session_select').value;
+    if (sessionId) {
+        fetchSessionData(sessionId);
+    } else {
+        alert('Please select a valid session');
+    }
+});
+
+loadSessions(); // 페이지 로드 시 세션 목록을 불러옴
 
 // 시작 버튼과 정지 버튼으로 기록 제어
 const startButton = document.getElementById('start_button');
@@ -192,3 +317,25 @@ stopButton.addEventListener('click', () => {
 });
 
 camera.start();
+
+window.addEventListener('DOMContentLoaded', () => {
+    const startButton = document.getElementById('start_button');
+    const stopButton = document.getElementById('stop_button');
+
+    startButton.addEventListener('click', () => {
+        isRecording = true;
+        lastSavedTimestamp = 0; // 기록 시작 시 마지막 저장 시간 초기화
+        console.log('Recording started');
+        startButton.disabled = true;
+        stopButton.disabled = false;
+    });
+
+    stopButton.addEventListener('click', () => {
+        isRecording = false;
+        console.log('Recording stopped');
+        saveSessionToDB(currentSession); // 기록 종료 후 세션 저장
+        currentSession.frames = []; // 프레임 데이터 초기화
+        startButton.disabled = false;
+        stopButton.disabled = true;
+    });
+});
