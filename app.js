@@ -9,14 +9,14 @@ const canvasElement = document.getElementById('output_canvas');
 const canvasCtx = canvasElement.getContext('2d');
 
 // 각도 계산 함수
-function calculateAngle(a, b, c) {
-    const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
-    let angle = Math.abs(radians * (180.0 / Math.PI));
-    
-    if (angle > 180.0) {
-        angle = 360.0 - angle;
-    }
-    return angle;
+function calculateAngle(hip, knee) {
+    const dx = knee.x - hip.x;
+    const dy = knee.y - hip.y;
+
+    // 벡터가 x축과 이루는 각도 계산
+    const angle = Math.atan2(dy, dx) * (180.0 / Math.PI); // 라디안을 도 단위로 변환
+
+    return Math.abs(angle); // 각도는 양수로 반환
 }
 
 let count = 0;
@@ -71,10 +71,9 @@ function onResults(results) {
         const ankle = landmarks[27]; // 왼쪽 발목
 
         // 무릎 각도 계산
-        const angle = calculateAngle(hip, knee, ankle);
-
+        const angle = calculateAngle(hip, knee);
         // 스쿼트 상태 체크
-        if (angle > 160) {
+        if (angle > 80) {
             if (squatState === 'down') {
                 squatState = 'up';
                 count++;
@@ -82,7 +81,7 @@ function onResults(results) {
                 console.log(`Count: ${count}`);
             }
         }
-        if (angle < 90) {
+        if (angle < 30) {
             squatState = 'down';
         }
     }
