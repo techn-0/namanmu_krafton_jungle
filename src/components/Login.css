@@ -1,0 +1,214 @@
+/* 전체 컨테이너 스타일 */
+.wrapper {
+    --input-focus: #2d8cf0; /* 입력 필드 포커스 색상 */
+    --font-color: #323232; /* 기본 폰트 색상 */
+    --font-color-sub: #666666; /* 서브 폰트 색상 */
+    --bg-color: #ffff80; /* 배경 색상 */
+    --bg-color-alt: #666; /* 대체 배경 색상 */
+    --main-color: #323232; /* 메인 컬러 (텍스트, 보더 등) */
+    display: flex; /* 플렉스 박스를 사용하여 정렬 */
+    flex-direction: column; /* 열 방향 정렬 */
+    align-items: center; /* 수평 중앙 정렬 */
+  }
+  
+  /* 스위치 버튼을 포함하는 카드 */
+  .switch {
+    transform: translateY(200px); /* 스위치의 수직 위치 조정 */
+    position: relative; /* 자식 요소에 대해 상대적 위치 설정 */
+    display: flex; /* 플렉스 박스를 사용하여 정렬 */
+    flex-direction: column; /* 열 방향 정렬 */
+    justify-content: center; /* 수직 중앙 정렬 */
+    align-items: center; /* 수평 중앙 정렬 */
+    gap: 30px; /* 자식 요소 간의 간격 */
+    width: 50px; /* 스위치 버튼의 너비 */
+    height: 20px; /* 스위치 버튼의 높이 */
+  }
+  
+  /* 로그인 텍스트 스타일 */
+  .card-side::before {
+    position: absolute; /* 절대 위치 지정 */
+    content: "Log in"; /* 표시할 텍스트 */
+    left: -70px; /* 왼쪽 위치 조정 */
+    top: 0; /* 상단 위치 조정 */
+    width: 100px; /* 너비 지정 */
+    text-decoration: underline; /* 밑줄 표시 */
+    color: var(--font-color); /* 폰트 색상 */
+    font-weight: 600; /* 폰트 굵기 */
+  }
+  
+  /* 회원가입 텍스트 스타일 */
+  .card-side::after {
+    position: absolute; /* 절대 위치 지정 */
+    content: "Sign up"; /* 표시할 텍스트 */
+    left: 70px; /* 오른쪽 위치 조정 */
+    top: 0; /* 상단 위치 조정 */
+    width: 100px; /* 너비 지정 */
+    text-decoration: none; /* 밑줄 없음 */
+    color: var(--font-color); /* 폰트 색상 */
+    font-weight: 600; /* 폰트 굵기 */
+  }
+  
+  /* 토글 스위치 */
+  .toggle {
+    opacity: 0; /* 숨김 처리 */
+    width: 0; /* 너비 없음 */
+    height: 0; /* 높이 없음 */
+  }
+  
+  /* 스위치의 슬라이더 */
+  .slider {
+    box-sizing: border-box; /* 보더와 패딩을 크기에 포함 */
+    border-radius: 5px; /* 둥근 모서리 */
+    border: 2px solid var(--main-color); /* 메인 컬러의 보더 */
+    box-shadow: 4px 4px var(--main-color); /* 그림자 효과 */
+    position: absolute; /* 절대 위치 지정 */
+    cursor: pointer; /* 커서가 포인터로 변경 */
+    top: 0; /* 상단 위치 */
+    left: 0; /* 좌측 위치 */
+    right: 0; /* 우측 위치 */
+    bottom: 0; /* 하단 위치 */
+    background-color: var(--bg-colorcolor); /* 배경색 */
+    transition: 0.3s; /* 0.3초 동안 전환 */
+  }
+  
+  /* 슬라이더의 버튼(토글 핸들) */
+  .slider:before {
+    box-sizing: border-box; /* 보더와 패딩을 크기에 포함 */
+    position: absolute; /* 절대 위치 지정 */
+    content: ""; /* 빈 내용 */
+    height: 20px; /* 핸들의 높이 */
+    width: 20px; /* 핸들의 너비 */
+    border: 2px solid var(--main-color); /* 메인 컬러의 보더 */
+    border-radius: 5px; /* 둥근 모서리 */
+    left: -2px; /* 왼쪽 위치 조정 */
+    bottom: 2px; /* 하단 위치 조정 */
+    background-color: var(--bg-color); /* 배경색 */
+    box-shadow: 0 3px 0 var(--main-color); /* 그림자 효과 */
+    transition: 0.3s; /* 0.3초 동안 전환 */
+  }
+  
+  /* 토글이 체크되었을 때 슬라이더의 배경색 */
+  .toggle:checked + .slider {
+    background-color: var(--input-focus); /* 입력 포커스 색상 */
+  }
+  
+  /* 토글이 체크되었을 때 슬라이더 핸들의 이동 */
+  .toggle:checked + .slider:before {
+    transform: translateX(30px); /* 핸들을 30px 이동 */
+  }
+  
+  /* 토글이 체크되었을 때 로그인 텍스트의 밑줄 해제 */
+  .toggle:checked ~ .card-side:before {
+    text-decoration: none;
+  }
+  
+  /* 토글이 체크되었을 때 회원가입 텍스트에 밑줄 표시 */
+  .toggle:checked ~ .card-side:after {
+    text-decoration: underline;
+  }
+  
+  /* 플립 카드 내부 (로그인/회원가입) */
+  .flip-card__inner {
+    width: 300px; /* 카드의 너비 */
+    height: 350px; /* 카드의 높이 */
+    position: relative; /* 자식 요소에 대해 상대적 위치 설정 */
+    background-color: transparent; /* 배경 투명 */
+    perspective: 1000px; /* 3D 투영 효과 */
+    text-align: center; /* 중앙 정렬 */
+    transition: transform 0.8s; /* 0.8초 동안 전환 */
+    transform-style: preserve-3d; /* 3D 변환 스타일 유지 */
+  }
+  
+  /* 토글이 체크되었을 때 카드 회전 */
+  .toggle:checked ~ .flip-card__inner {
+    transform: rotateY(180deg); /* 카드가 Y축으로 180도 회전 */
+  }
+  
+  /* 플립 카드 앞면 스타일 */
+  .flip-card__front,
+  .flip-card__back {
+    padding: 20px; /* 패딩 */
+    position: absolute; /* 절대 위치 지정 */
+    display: flex; /* 플렉스 박스를 사용하여 정렬 */
+    flex-direction: column; /* 열 방향 정렬 */
+    justify-content: center; /* 수직 중앙 정렬 */
+    -webkit-backface-visibility: hidden; /* 뒤집힘 숨김 처리 (웹킷) */
+    backface-visibility: hidden; /* 뒤집힘 숨김 처리 */
+    background: rgb(104, 183, 205); /* 배경색 */
+    gap: 20px; /* 자식 요소 간의 간격 */
+    border-radius: 5px; /* 둥근 모서리 */
+    border: 2px solid var(--main-color); /* 메인 컬러의 보더 */
+    box-shadow: 4px 4px var(--main-color); /* 그림자 효과 */
+  }
+  
+  /* 플립 카드 뒷면 스타일 */
+  .flip-card__back {
+    width: 100%; /* 너비 100% */
+    transform: rotateY(180deg); /* 카드가 Y축으로 180도 회전 */
+  }
+  
+  /* 로그인/회원가입 폼 스타일 */
+  .flip-card__form {
+    display: flex; /* 플렉스 박스를 사용하여 정렬 */
+    flex-direction: column; /* 열 방향 정렬 */
+    align-items: center; /* 수평 중앙 정렬 */
+    gap: 20px; /* 자식 요소 간의 간격 */
+  }
+  
+  /* 제목 스타일 */
+  .title {
+    margin: 20px 0 20px 0; /* 상하 마진 */
+    font-size: 25px; /* 폰트 크기 */
+    font-weight: 900; /* 폰트 굵기 */
+    text-align: center; /* 중앙 정렬 */
+    color: var(--main-color); /* 메인 컬러 */
+  }
+  
+  /* 입력 필드 스타일 */
+  .flip-card__input {
+    width: 250px; /* 입력 필드 너비 */
+    height: 40px; /* 입력 필드 높이 */
+    border-radius: 5px; /* 둥근 모서리 */
+    border: 2px solid var(--main-color); /* 메인 컬러의 보더 */
+    background-color: var(--bg-color); /* 배경색 */
+    box-shadow: 4px 4px var(--main-color); /* 그림자 효과 */
+    font-size: 15px; /* 폰트 크기 */
+    font-weight: 600; /* 폰트 굵기 */
+    color: var(--font-color); /* 폰트 색상 */
+    padding: 5px 10px; /* 내부 여백 */
+    outline: none; /* 포커스 시 기본 외곽선 제거 */
+  }
+  
+  /* 입력 필드의 플레이스홀더 텍스트 스타일 */
+  .flip-card__input::placeholder {
+    color: var(--font-color-sub); /* 서브 폰트 색상 */
+    opacity: 0.8; /* 투명도 */
+  }
+  
+  /* 입력 필드에 포커스 시 보더 색상 변경 */
+  .flip-card__input:focus {
+    border: 2px solid var(--input-focus); /* 입력 필드 포커스 색상 */
+  }
+  
+  /* 버튼을 클릭했을 때 스타일 */
+  .flip-card__btn:active,
+  .button-confirm:active {
+    box-shadow: 0px 0px var(--main-color); /* 그림자 효과 없음 */
+    transform: translate(3px, 3px); /* 3px 이동 */
+  }
+  
+  /* 버튼 기본 스타일 */
+  .flip-card__btn {
+    margin: 20px 0 20px 0; /* 상하 마진 */
+    width: 120px; /* 버튼 너비 */
+    height: 40px; /* 버튼 높이 */
+    border-radius: 5px; /* 둥근 모서리 */
+    border: 2px solid var(--main-color); /* 메인 컬러의 보더 */
+    background-color: var(--bg-color); /* 배경색 */
+    box-shadow: 4px 4px var(--main-color); /* 그림자 효과 */
+    font-size: 17px; /* 폰트 크기 */
+    font-weight: 600; /* 폰트 굵기 */
+    color: var(--font-color); /* 폰트 색상 */
+    cursor: pointer; /* 커서가 포인터로 변경 */
+  }
+  
