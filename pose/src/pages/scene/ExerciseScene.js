@@ -10,6 +10,7 @@ import Buttons from "../ui/exerciseButtons";
 import LoginModal from "../login/LoginModal";
 import { setBackgroundColor } from "../../shared/background";
 import ExerciseTimer from "../../app/exerciseTimer"; // ExerciseTimer 컴포넌트 임포트
+import { getToken } from "../../pages/login/AuthContext";
 
 function ExerciseScene() {
   const mountRef = useRef(null); // Three.js 씬을 마운트할 DOM 요소
@@ -236,12 +237,14 @@ function ExerciseScene() {
   };
 
   // 선택 완료 핸들러
+  const token = getToken();
   const handleSelectionComplete = () => {
     if (selectedExercise && selectedDuration) {
       // 서버로 선택한 종목과 시간 전송
       fetch("http://localhost:3002/workout/start_exercise", {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -348,6 +351,7 @@ function ExerciseScene() {
     fetch("http://localhost:3002/workout/end_exercise", {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestData),
