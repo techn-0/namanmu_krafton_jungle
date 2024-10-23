@@ -14,14 +14,7 @@ export class AuthController {
   ): Promise<{ message: string }> {
     return this.authService.signUp(userCredentialDto);
   }
-
-  @Post('/signup')
-  singUp(
-    @Body() userCredentialDto: UserCredentialDto,
-  ): Promise<{ message: string }> {
-    return this.authService.signUp(userCredentialDto);
-  }
-
+  
   @Post('/signin')
   signIn(
     @Body() userCredentialDto: UserCredentialDto,

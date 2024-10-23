@@ -42,7 +42,6 @@ export class AuthService {
       const { id, password } = userCredentialDto;
       const user = await this.userModel.findOne({username : id});
 
-
   if (user && user.password === password) {
     const payload = { id };
     const accessToken = await this.jwtService.sign(payload);
