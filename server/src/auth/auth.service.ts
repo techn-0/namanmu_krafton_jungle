@@ -26,7 +26,7 @@ export class AuthService {
                 password,
                 email,
             });
-            return { message: 'success'};
+            return { message: '회원가입 성공!'};
         } catch (error){
             console.log(error);
             if(error.code === 11000){

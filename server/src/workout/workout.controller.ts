@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { WorkoutService } from './workout.service';
 import { CreateWorkoutDto } from './dto/create-workout.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('workout')
+@UseGuards(AuthGuard())
 export class WorkoutController {
   constructor(private readonly workoutService: WorkoutService) {}
 
