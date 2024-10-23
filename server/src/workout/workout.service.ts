@@ -3,31 +3,29 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { WorkOut } from './schemas/workout.schema';
 import { CreateWorkoutDto } from './dto/create-workout.dto';
-import { User } from 'src/auth/schemas/user.schema';
 
 @Injectable()
 export class WorkoutService {
   constructor(
-    @InjectModel(WorkOut.name) private workoutModel: Model<WorkOut>,
-    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(WorkOut.name) private workoutModel: Model<WorkOut>
   ) {}
 
   // userId와 duration에 따른 운동 기록 조회
   async findWorkoutsByUserAndDuration(
-    username: string,
+    userId: string,
     duration: number,
   ): Promise<WorkOut[]> {
-    const user = await this.userModel.findOne({username}).exec();
-    return this.workoutModel.find({ userId: user._id, duration }).exec(); // userId와 duration으로 필터링
+    return this.workoutModel.find({ userId, duration }).exec(); // userId와 duration으로 필터링
   }
 
   async getRecord(
+    userId: string,
     exercise: string,
     duration: number,
   ): Promise<{ count: number; date: string }> {
     try {
       const workout = await this.workoutModel
-        .findOne({ exercise, duration })
+        .findOne({ userId, exercise, duration })
         .sort({ count: -1 })
         .exec();
 

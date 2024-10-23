@@ -10,13 +10,13 @@ export class WorkoutController {
 
   // userId와 duration에 따른 운동 기록 가져오기
   @Get()
-  async getWorkouts(@Query('userId') username: string, @Query('duration') duration: number) {
-    return this.workoutService.findWorkoutsByUserAndDuration(username, duration);
+  async getWorkouts(@Req() req:any , @Query('duration') duration: number) {
+    return this.workoutService.findWorkoutsByUserAndDuration(req.user._id, duration);
   }
 
   @Post('/start_exercise')
-    getRecord(@Body() body: { exercise: string, duration: number}): Promise<{ count: number; date: string }> {
-        return this.workoutService.getRecord(body.exercise, body.duration);
+    getRecord(@Body() body: { exercise: string, duration: number}, @Req() req:any): Promise<{ count: number; date: string }> {
+        return this.workoutService.getRecord(req.user._id,body.exercise, body.duration);
     }
   
     // 운동 기록 생성 (end_exercise)

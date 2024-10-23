@@ -13,7 +13,7 @@ import {
 } from "chart.js";
 import { Line, Radar } from "react-chartjs-2";
 import "./ExerciseGraph.css";
-
+import { getToken } from "../login/AuthContext";
 // Chart.js에 필요한 구성 요소 등록.
 ChartJS.register(
   CategoryScale,
@@ -36,12 +36,20 @@ const ExerciseGraph = () => {
   const userId = sessionStorage.getItem("userId");
 
   // 운동 기록 데이터를 백엔드에서 가져오기
+  const token = getToken();  
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
         // 선택된 duration 값을 쿼리 파라미터로 추가하여 백엔드 요청
         const response = await fetch(
-          `http://localhost:3002/workout?userId=${userId}&duration=${selectedDuration}`
+          `http://localhost:3002/workout?duration=${selectedDuration}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`, // JWT 토큰 추가
+              "Content-Type": "application/json",
+            }
+          }
         );
         const data = await response.json();
         setWorkoutData(data); // 운동 기록 데이터를 상태로 저장
@@ -73,7 +81,7 @@ const ExerciseGraph = () => {
       {
         label: "Push-ups",
         data: workoutData
-          .filter((entry) => entry.exercise === "Push-ups")
+          .filter((entry) => entry.exercise === "pushup")
           .map((entry) => entry.count),
         borderColor: "rgba(75, 192, 192, 1)",
         backgroundColor: "rgba(75, 192, 192, 0.2)",
@@ -83,7 +91,7 @@ const ExerciseGraph = () => {
       {
         label: "Squats",
         data: workoutData
-          .filter((entry) => entry.exercise === "Squats")
+          .filter((entry) => entry.exercise === "squat")
           .map((entry) => entry.count),
         borderColor: "rgba(153, 102, 255, 1)",
         backgroundColor: "rgba(153, 102, 255, 0.2)",
@@ -93,7 +101,7 @@ const ExerciseGraph = () => {
       {
         label: "Plank(minutes)",
         data: workoutData
-          .filter((entry) => entry.exercise === "Plank")
+          .filter((entry) => entry.exercise === "plank")
           .map((entry) => entry.count),
         borderColor: "rgba(255, 159, 64, 1)",
         backgroundColor: "rgba(255, 159, 64, 0.2)",
@@ -112,17 +120,17 @@ const ExerciseGraph = () => {
         data: [
           Math.max(
             ...workoutData
-              .filter((entry) => entry.exercise === "Push-ups")
+              .filter((entry) => entry.exercise === "pushup")
               .map((entry) => entry.count)
           ),
           Math.max(
             ...workoutData
-              .filter((entry) => entry.exercise === "Squats")
+              .filter((entry) => entry.exercise === "squat")
               .map((entry) => entry.count)
           ),
           Math.max(
             ...workoutData
-              .filter((entry) => entry.exercise === "Plank")
+              .filter((entry) => entry.exercise === "plank")
               .map((entry) => entry.count)
           ),
         ], // 각 운동의 최고 기록
